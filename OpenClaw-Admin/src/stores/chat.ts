@@ -356,7 +356,37 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const normalizedKey = key.trim()
       sessionKey.value = normalizedKey
-      messages.value = await wsStore.rpc.listChatHistory(normalizedKey)
+      const serverMessages = await wsStore.rpc.listChatHistory(normalizedKey)
+      
+      // 保留本地添加的消息（id 以 'web-' 开头），避免被服务器历史覆盖
+      // 条件：本地消息的 id 在服务器消息中不存在，且内容不完全相同（避免重复）
+      const localMessages = messages.value.filter((msg) => {
+        if (!msg.id?.startsWith('web-')) return false
+        // 检查服务器消息中是否有相同 id
+        if (serverMessages.some((sm: ChatMessage) => sm.id === msg.id)) return false
+        // 检查服务器消息中是否有相同角色和内容（可能是服务器返回的同一消息但 id 不同）
+        if (serverMessages.some((sm: ChatMessage) => sm.role === msg.role && sm.content === msg.content)) return false
+        return true
+      })
+      
+      if (localMessages.length > 0) {
+        // 合并本地消息：服务器消息按时间排序，本地消息追加在最后
+        const sortedServerMessages = [...serverMessages].sort((a, b) => {
+          const tsA = a.timestamp ? new Date(a.timestamp).getTime() : 0
+          const tsB = b.timestamp ? new Date(b.timestamp).getTime() : 0
+          return tsA - tsB
+        })
+        // 本地消息按发送时间排序
+        const sortedLocalMessages = [...localMessages].sort((a, b) => {
+          const tsA = a.timestamp ? new Date(a.timestamp).getTime() : 0
+          const tsB = b.timestamp ? new Date(b.timestamp).getTime() : 0
+          return tsA - tsB
+        })
+        messages.value = [...sortedServerMessages, ...sortedLocalMessages]
+      } else {
+        messages.value = serverMessages
+      }
+      
       lastSyncedAt.value = Date.now()
     } catch (error) {
       if (!silent || clearError) {
