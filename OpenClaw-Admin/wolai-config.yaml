@@ -1,0 +1,35 @@
+# wolai 导出工具配置文件
+# Windows 系统需保存为 ANSI/GB2312 编码
+
+# 必填：从浏览器登录后获取的 Cookie
+# 在浏览器中登录 wolai，打开开发者工具(F12)，在 Network 标签页找到请求头中的 Cookie
+cookie: "isg=xxx; token=xxx, wolai_client_id=xxx"
+
+# 必填：备份保存目录（建议使用绝对路径）
+backupBackupDir: D:\wolai\backup
+
+# 导出格式（可选多个）
+exportType:
+  - html  # HTML 格式，保持原版样式
+  - md    # Markdown 格式，便于编辑
+
+# 日志配置
+log:
+  # 日志级别：fatal, error, warn, info, debug, debug1, debug2, debug3
+  level: info
+  # 日志文件路径（为空则不输出到文件）
+  outputFile: "debug.log"
+  # 是否输出到控制台
+  toConsole: true
+
+# 忽略规则配置（可选）
+# ignore:
+#   - workspace: 工作区A
+#     subspace:
+#       - name: 子空间A1
+#         page:
+#           - name: "*"  # 忽略所有页面
+#       - name: 子空间A2
+#         page:
+#           - name: 页面名1
+#           - name: 页面名2
