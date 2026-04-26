@@ -209,8 +209,19 @@ Supports two path formats:
 ### Long Video Generation
 - Detailed description: `skills/unicom-longvideo/SKILL.md`
 
+
+https://github.com/user-attachments/assets/ddb13c0c-13db-4e8c-83dc-cc3b07aa062d
+
+
+
 ### Digital Avatar Production
 - Detailed description: `skills/unicom-digital-avatar/SKILL.md`
+
+
+https://github.com/user-attachments/assets/7ec85f5e-a6b4-4c5b-b9c6-d72123abb130
+
+
+
 
 ## 🙏 Acknowledgments
 
