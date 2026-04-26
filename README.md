@@ -2,91 +2,97 @@
 
 <div align="center">
   <img src="assets/logo.png" alt="MediaClaw Logo" width="200"/>
-  <h3>多模态智能体平台</h3>
-  <p>聚合全品类AIGC能力，快速搭建适配场景的多媒体生成方案</p>
+  <h3>Multimodal Agent Platform</h3>
+  <p>Aggregate full-stack AIGC capabilities to quickly build scenario-adapted multimedia generation solutions</p>
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-green.svg)](https://github.com/openclaw/openclaw.git)
 [![Version](https://img.shields.io/badge/version-1.6.1-orange.svg)]()
 [![Node.js](https://img.shields.io/badge/node.js-%3E%3D22-brightgreen.svg)]()
-[![Documentation](https://img.shields.io/badge/English-README_en.md-blue.svg)](README_en.md)
+
+<p align="center">
+    English |
+    <a href="./README_CN.md">简体中文</a> 
+</p>
 
 </div>
 
-## 🚀 项目简介
+## 🚀 Introduction
 
-MediaClaw 是基于 [OpenClaw](https://github.com/itq5/OpenClaw) 生态开发的多模态智能体平台，通过聚合图文生成、视频创作、语音合成、数字人、后期特效等全品类AIGC元能力，形成可统一调用、灵活组合的工具集，专门用于支撑各类垂直任务的Skill定制。我们基于[OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) 进行了界面定制与功能扩展，通过统一AIGC UI对外开放，帮助业务团队、开发者和生态伙伴快速搭建真正适配场景的多媒体生成方案，简化操作、降本提效。
+MediaClaw is an [OpenClaw-based](https://github.com/openclaw/openclaw) multimodal agent platform developed by UnicomAI(YuanJing) team. By aggregating full-category AIGC meta-capabilities including image generation, video creation, speech synthesis, digital human, and post-production effects, it forms a unified and flexible toolset (meta-capability pool) that can be called uniformly and combined flexibly.
+
+We have customized the HMI(Human-Machine Interface) and extended functions and opened it to the public through a unified MediaUI. It is specially designed to support Skill customization for various vertical tasks, helping business teams, developers, and ecological partners quickly build multimedia generation solutions that truly adapt to scenarios, simplifying operations, reducing costs and improving efficiency.
 
 <div align="center">
-  <img src="assets/arch.jpg" alt="MediaClaw 架构图" width="800"/>
-  <p><em>MediaClaw 整体架构图</em></p>
+  <img src="assets\mediaclaw_en1.jpg" alt="MediaClaw Architecture" width="800"/>
+  <p><em>MediaClaw Overall Architecture Diagram</em></p>
 </div>
 
-## ✨ 核心特性
+## ✨ Core Features
 
-- 🎨 **全栈AIGC能力**：覆盖图文、视频、语音、数字人等全品类多媒体生成能力
-- 🔌 **插件化架构**：基于OpenClaw生态开发，无缝集成到现有OpenClaw部署
-- 🎯 **多提供商支持**：同时支持元景（YuanJing）和SGLang双后端提供商
-- ⚙️ **灵活配置**：支持按能力维度配置不同提供商和模型选项
-- 🛠️ **开箱即用**：提供完善的WebUI界面，无需复杂开发即可快速上手
-- 🔧 **技能扩展**：支持自定义Skill开发，快速适配垂直场景需求
-- 🎬 **后期处理**：内置字幕烧录、绿幕抠图等本地视频处理能力
+- 🎨 **Full-stack AIGC Capabilities**: Covering full-category multimedia generation capabilities including images, videos, speech, and digital humans
+- 🔌 **Plugin Architecture**: Developed based on OpenClaw ecosystem, seamlessly integrated into existing OpenClaw deployments
+- 🎯 **Multi-provider Support**: Support both YuanJing and SGLang backend providers
+- ⚙️ **Flexible Configuration**: Support configuring different providers and model options by capability dimension
+- 🛠️ **Out-of-the-box**: Provides a complete WebUI interface, ready to use without complex development
+- 🔧 **Skill Extension**: Support custom Skill development to quickly adapt to vertical scenario requirements
+- 🎬 **Post-processing**: Built-in local video processing capabilities such as subtitle burning and green screen matting
 
-## 📊 能力矩阵
+## 📊 Capability Matrix
 
-| 功能 | 后端依赖 | 元景 (YuanJing) | SGLang | 工具名 |
-|------|----------|:---------------:|:------:|--------|
-| 文生图 | 需要 | ✅ | ✅ | `mediaclaw_text_to_image` |
-| 图文问答 | 需要 | ✅ | ✅ | `mediaclaw_image_qa` |
-| 文生视频 | 需要 | ✅ (Wan/Kling) | ✅ | `mediaclaw_text_to_video` |
-| 单图生视频 | 需要 | ✅ (Wan风格化/Kling单图) | ✅ | `mediaclaw_image_to_video` |
-| 多图/首尾帧生视频 | 需要 | ✅ (Wan多图/Kling首尾帧) | ❌ | `mediaclaw_images_to_video` |
-| 文生语音 | 需要 | ✅ | ❌ | `mediaclaw_text_to_speech` |
-| 数字人视频 | 需要 | ✅ | ❌ | `mediaclaw_digital_avatar` |
-| 字幕烧录 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_burn_subtitles` |
-| 绿幕换背景 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_replace_background` |
-| 本地图片/视频 | 不需要（本地处理） | N/A | N/A | `mediaclaw_local_image` |
+| Feature | Backend Dependency | YuanJing | SGLang | Tool Name |
+|---------|---------------------|:--------:|:------:|-----------|
+| Text to Image | Required | ✅ | ✅ | `mediaclaw_text_to_image` |
+| Image QA | Required | ✅ | ✅ | `mediaclaw_image_qa` |
+| Text to Video | Required | ✅ (Wan/Kling) | ✅ | `mediaclaw_text_to_video` |
+| Image to Video | Required | ✅ (Wan Stylization/Kling Single Image) | ✅ | `mediaclaw_image_to_video` |
+| Multiple Images to Video | Required | ✅ (Wan Multi-image/Kling First-last Frame) | ❌ | `mediaclaw_images_to_video` |
+| Text to Speech | Required | ✅ | ❌ | `mediaclaw_text_to_speech` |
+| Digital Avatar Video | Required | ✅ | ❌ | `mediaclaw_digital_avatar` |
+| Subtitle Burning | No required (local ffmpeg) | N/A | N/A | `mediaclaw_burn_subtitles` |
+| Green Screen Background Replacement | No required (local ffmpeg) | N/A | N/A | `mediaclaw_replace_background` |
+| Local Image/Video Processing | No required (local processing) | N/A | N/A | `mediaclaw_local_image` |
 
-## 📦 安装指南
+## 📦 Installation Guide
 
-### 环境要求
+### Environment Requirements
 
 - Node.js 22+
 - OpenClaw Gateway >= 2026.3.24-beta.2
-- 使用 `mediaclaw_burn_subtitles` / `mediaclaw_replace_background` 需安装 `ffmpeg`
+- `ffmpeg` is required for using `mediaclaw_burn_subtitles` / `mediaclaw_replace_background`
 
-### 插件安装
+### Plugin Installation
 
 ```bash
-# 安装MediaClaw插件
+# Install MediaClaw plugin
 openclaw plugins install ./mediaclaw-plugin --force
 
-# 重启OpenClaw网关
+# Restart OpenClaw gateway
 openclaw gateway restart
 ```
 
-### WebUI 安装
+### WebUI Installation
 
-WebUI 基于 [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) 定制开发：
+WebUI is customized based on [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin):
 
 ```bash
-# 进入OpenClaw-Admin目录
+# Enter OpenClaw-Admin directory
 cd OpenClaw-Admin
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 启动开发服务
+# Start development server
 npm run dev:all
 ```
 
-安装完成后，访问 `http://localhost:3001/` 即可使用。
+After installation, visit `http://localhost:3001/` to use.
 
-## ⚙️ 配置说明
+## ⚙️ Configuration Guide
 
-### 基础配置
+### Basic Configuration
 
-编辑 `openclaw.json` 配置文件，在 `plugins` 节点中新增 MediaClaw 相关配置：
+Edit the `openclaw.json` configuration file and add MediaClaw related configuration in the `plugins` node:
 
 ```json
 "plugins": {
@@ -114,16 +120,16 @@ npm run dev:all
   },
 ```
 
-**配置说明：**
-- 默认使用元景（YuanJing）作为默认提供商（`defaultProvider: "yuanjing"`）
-- `providers` 节点为全局提供商配置
-- `capabilities.<name>.provider` 可单独为每个能力指定提供商，覆盖全局配置
+**Configuration Description:**
+- YuanJing is used as the default provider by default (`defaultProvider: "yuanjing"`)
+- The `providers` node is the global provider configuration
+- `capabilities.<name>.provider` can specify a provider for each capability individually, overriding the global configuration
 
-### 视频模型配置
+### Video Model Configuration
 
-元景MaaS平台已接入可灵（Kling）服务，支持在元景提供商下选择使用 Wan 或 Kling 模型。
+YuanJing MaaS platform has integrated Kling services, supporting the selection of Wan or Kling models under the YuanJing provider.
 
-**简化配置（仅指定模型）：**
+**Simplified Configuration (Model Only):**
 ```json
 {
   "providers": {
@@ -137,7 +143,7 @@ npm run dev:all
 }
 ```
 
-**完整配置（指定提供商和模型）：**
+**Full Configuration (Provider and Model):**
 ```json
 {
   "providers": {
@@ -160,66 +166,66 @@ npm run dev:all
 }
 ```
 
-**视频模型选项：**
-- `wan` - Wan 2.2 模型（默认）
-- `kling` - Kling V3 模型（高品质视频）
+**Video Model Options:**
+- `wan` - Wan 2.2 Model (Default)
+- `kling` - Kling V3 Model (High-quality Video)
 
-**能力说明：**
-- `image_to_video`：单图生视频（支持Wan风格化或Kling单图生成）
-- `images_to_video`：多图/首尾帧生视频（支持Wan多图或Kling首尾帧生成）
+**Capability Description:**
+- `image_to_video`: Single image to video (supports Wan stylization or Kling single image generation)
+- `images_to_video`: Multiple images/first-last frame to video (supports Wan multi-image or Kling first-last frame generation)
 
-### 配置参数详解
+### Configuration Parameter Details
 
-| 参数 | 说明 |
-|------|------|
-| `providers.yuanjing.apiKey` | 元景 API Key（必填） |
-| `providers.yuanjing.baseUrl` | 元景 API 服务地址 |
-| `providers.sglang.baseUrl` | SGLang 服务地址 |
+| Parameter | Description |
+|-----------|-------------|
+| `providers.yuanjing.apiKey` | YuanJing API Key (Required) |
+| `providers.yuanjing.baseUrl` | YuanJing API service address |
+| `providers.sglang.baseUrl` | SGLang service address |
 | `providers.sglang.apiKey` | SGLang API Key |
-| `providers.sglang.apiPath` | API 路径前缀 |
-| `capabilities` | 能力配置节点，支持：`textToImage`、`textToVideo`、`imageToVideo`、`imagesToVideo`、`imageQA`、`textToSpeech`、`digitalAvatar` |
-| `capabilities.<name>.videoModel` | 元景提供商下指定视频模型：`wan` 或 `kling` |
-| `defaultProvider` | 未单独配置的能力使用的默认提供商 |
-| `outputDir` | 生成文件的输出目录 |
-| `videoPollInterval` | 视频生成轮询间隔(ms)，默认 5000 |
-| `videoMaxWaitTime` | 视频生成最大等待时间(ms)，默认 300000 |
+| `providers.sglang.apiPath` | API path prefix |
+| `capabilities` | Capability configuration node, supports: `textToImage`, `textToVideo`, `imageToVideo`, `imagesToVideo`, `imageQA`, `textToSpeech`, `digitalAvatar` |
+| `capabilities.<name>.videoModel` | Specify video model under YuanJing provider: `wan` or `kling` |
+| `defaultProvider` | Default provider for capabilities not individually configured |
+| `outputDir` | Output directory for generated files |
+| `videoPollInterval` | Video generation polling interval (ms), default 5000 |
+| `videoMaxWaitTime` | Maximum waiting time for video generation (ms), default 300000 |
 
-## 🔍 SGLang Vision 配置
+## 🔍 SGLang Vision Configuration
 
-`mediaclaw_image_qa` 能力在 `sglang` 模式下使用 OpenAI 兼容的 Vision 接口：
+The `mediaclaw_image_qa` capability uses the OpenAI compatible Vision interface in `sglang` mode:
 
-- 接口地址：`POST /chat/completions`
+- Interface address: `POST /chat/completions`
 
-支持两类路径格式：
+Supports two path formats:
 - `/v1/chat/completions`
 - `/openapi/v1/web_control/chat/completions`
 
-**配置建议：**
-- 如果 `baseUrl` 已包含 `/openapi/v1/web_control`，则 `apiPath` 设为空字符串
-- 如果 `baseUrl` 仅为主机地址（如 `http://127.0.0.1:30010`），则 `apiPath` 设为 `/v1`
+**Configuration Suggestions:**
+- If `baseUrl` already includes `/openapi/v1/web_control`, set `apiPath` to an empty string
+- If `baseUrl` is only the host address (e.g., `http://127.0.0.1:30010`), set `apiPath` to `/v1`
 
-## 🛠️ 内置技能
+## 🛠️ Built-in Skills
 
-### 长视频生成
-- 详细说明：`skills/unicom-longvideo/SKILL.md`
+### Long Video Generation
+- Detailed description: `skills/unicom-longvideo/SKILL.md`
 
-### 数字人制作
-- 详细说明：`skills/unicom-digital-avatar/SKILL.md`
+### Digital Avatar Production
+- Detailed description: `skills/unicom-digital-avatar/SKILL.md`
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-MediaClaw 的开发离不开开源社区的支持，我们在此特别感谢：
+The development of MediaClaw is inseparable from the support of the open source community. We would like to express our special thanks to:
 
-- [OpenClaw](https://github.com/itq5/OpenClaw) - 提供了强大的插件化网关平台和生态支持，是MediaClaw的运行基础
-- [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) - 提供了优秀的管理界面框架，我们在此基础上进行了AIGC能力的定制扩展
-- 所有为开源项目做出贡献的开发者们
+- [OpenClaw](https://github.com/itq5/OpenClaw) - Provides a powerful plugin gateway platform and ecological support, which is the operating foundation of MediaClaw
+- [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) - Provides an excellent management interface framework, based on which we have customized and extended AIGC capabilities
+- All developers who contribute to open source projects
 
-## 📄 许可证
+## 📄 License
 
-MediaClaw 采用 [MIT 许可证](LICENSE) 开源，您可以自由使用、修改和分发，但请保留相关版权声明和致谢信息。
+MediaClaw is open sourced under the [MIT License](LICENSE). You are free to use, modify and distribute it, but please retain the relevant copyright notice and acknowledgment information.
 
 ---
 
 <div align="center">
-  <strong>如果这个项目对您有帮助，请给我们一个 ⭐️ Star 支持！</strong>
+  <strong>If this project is helpful to you, please give us a ⭐️ Star to support!</strong>
 </div>
