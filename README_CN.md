@@ -207,8 +207,19 @@ npm run dev:all
 ### 长视频生成
 - 详细说明：`skills/unicom-longvideo/SKILL.md`
 
+
+
+https://github.com/user-attachments/assets/d6e26691-6391-4e40-8c7c-1209e90fe9b1
+
+
+
 ### 数字人制作
 - 详细说明：`skills/unicom-digital-avatar/SKILL.md`
+
+
+https://github.com/user-attachments/assets/cfd28a76-4958-4225-ae0b-096d61745585
+
+
 
 ## 🙏 致谢
 
