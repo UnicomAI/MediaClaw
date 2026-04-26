@@ -1,7 +1,7 @@
 # MediaClaw
 
 <div align="center">
-  <img src="docs/assets/logo.png" alt="MediaClaw Logo" width="200"/>
+  <img src="assets/logo.png" alt="MediaClaw Logo" width="200"/>
   <h3>多模态智能体平台</h3>
   <p>聚合全品类AIGC能力，快速搭建适配场景的多媒体生成方案</p>
 
@@ -14,9 +14,7 @@
 
 ## 🚀 项目简介
 
-MediaClaw 是基于 [OpenClaw](https://github.com/itq5/OpenClaw) 生态开发的多模态智能体平台，通过聚合图文生成、视频创作、语音合成、数字人、后期特效等全品类AIGC元能力，形成可统一调用、灵活组合的工具集（元能力池）。
-
-我们基于 [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) 进行了界面定制与功能扩展，通过统一AIGC UI对外开放，专门用于支撑各类垂直任务的Skill定制，帮助业务团队、开发者和生态伙伴快速搭建真正适配场景的多媒体生成方案，简化操作、降本提效。
+MediaClaw 是基于 [OpenClaw](https://github.com/itq5/OpenClaw) 生态开发的多模态智能体平台，通过聚合图文生成、视频创作、语音合成、数字人、后期特效等全品类AIGC元能力，形成可统一调用、灵活组合的工具集，专门用于支撑各类垂直任务的Skill定制。我们基于[OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) 进行了界面定制与功能扩展，通过统一AIGC UI对外开放，帮助业务团队、开发者和生态伙伴快速搭建真正适配场景的多媒体生成方案，简化操作、降本提效。
 
 ## ✨ 核心特性
 
