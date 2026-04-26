@@ -6,7 +6,7 @@
   <p>聚合全品类AIGC能力，快速搭建适配场景的多媒体生成方案</p>
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-green.svg)](https://github.com/itq5/OpenClaw)
+[![OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-green.svg)](https://github.com/openclaw/openclaw.git)
 [![Version](https://img.shields.io/badge/version-1.6.1-orange.svg)]()
 [![Node.js](https://img.shields.io/badge/node.js-%3E%3D22-brightgreen.svg)]()
 [![Documentation](https://img.shields.io/badge/English-README_en.md-blue.svg)](README_en.md)

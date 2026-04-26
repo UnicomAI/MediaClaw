@@ -6,7 +6,7 @@
   <p>Aggregate full-stack AIGC capabilities to quickly build scenario-adapted multimedia generation solutions</p>
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-green.svg)](https://github.com/itq5/OpenClaw)
+[![OpenClaw](https://img.shields.io/badge/powered%20by-OpenClaw-green.svg)](https://github.com/openclaw/openclaw.git)
 [![Version](https://img.shields.io/badge/version-1.6.1-orange.svg)]()
 [![Node.js](https://img.shields.io/badge/node.js-%3E%3D22-brightgreen.svg)]()
 [![Documentation](https://img.shields.io/badge/中文文档-README.md-red.svg)](README.md)
