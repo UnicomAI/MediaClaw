@@ -20,7 +20,7 @@ MediaClaw is a multimodal agent platform developed based on the [OpenClaw](https
 We have customized the interface and extended functions based on [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin), and opened it to the public through a unified AIGC UI. It is specially designed to support Skill customization for various vertical tasks, helping business teams, developers, and ecological partners quickly build multimedia generation solutions that truly adapt to scenarios, simplifying operations, reducing costs and improving efficiency.
 
 <div align="center">
-  <img src="assets/arch.JPEG" alt="MediaClaw Architecture" width="800"/>
+  <img src="assets\mediaclaw_en.jpg" alt="MediaClaw Architecture" width="800"/>
   <p><em>MediaClaw Overall Architecture Diagram</em></p>
 </div>
 
