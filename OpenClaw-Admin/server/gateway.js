@@ -12,8 +12,7 @@ export class OpenClawGateway extends EventEmitter {
   constructor(url, authToken, authPassword, logLevel = 'INFO') {
     super()
     this.url = url
-    // this.authToken = authToken
-    this.authToken = "8650eea44450263bb593d4121e94718e205a8729ef86dd03"
+    this.authToken = authToken
     this.authPassword = authPassword
     this.logLevel = logLevel
     this.isDebug = logLevel === 'DEBUG'
