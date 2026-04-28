@@ -78,6 +78,10 @@ WebUI is customized based on [OpenClaw-Admin](https://github.com/itq5/OpenClaw-A
 ```bash
 # Enter OpenClaw-Admin directory
 cd OpenClaw-Admin
+cp .env.example .env
+
+# Edit openclaw auth token in .env file
+OPENCLAW_AUTH_TOKEN=YOUR_AUTH_TOKEN
 
 # Install dependencies
 npm install

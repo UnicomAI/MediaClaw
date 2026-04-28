@@ -76,6 +76,10 @@ WebUI 基于 [OpenClaw-Admin](https://github.com/itq5/OpenClaw-Admin) 定制开�
 ```bash
 # 进入OpenClaw-Admin目录
 cd OpenClaw-Admin
+cp .env.example .env
+
+# 在.env文件中输入openclaw的auth token
+OPENCLAW_AUTH_TOKEN=YOUR_AUTH_TOKEN
 
 # 安装依赖
 npm install
