@@ -1,6 +1,6 @@
 {
-  "name": "@myorg/openclaw-mediaclaw",
-  "version": "1.6.0",
+  "name": "@UnicomAI/mediaclaw",
+  "version": "1.0.0",
   "type": "module",
   "openclaw": {
     "extensions": [
