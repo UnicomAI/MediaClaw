@@ -79,20 +79,28 @@ metadata:
 
 根据用户的输入内容，判断用户的意图信号，确定使用哪个模式：
 
-| 用户意图信号 | 模式 | 起点 |
-|------------|------|------|
-| 模糊想法 ("帮我做个数字人视频" / "做个介绍视频") | **Full Producer** | Phase 1 |
-| 已有文本 ("用这段文本做个视频" + 提供文本) | **Enhanced Prompt** | Phase 1b |
-| 明确指定：文本 + 数字人形象 + 说话人id | **Quick Shot** |  Phase 1e |
+| 用户意图信号 | 模式 | 起点 | 流程 |
+|------------|------|------|------|
+| 模糊想法 ("帮我做个数字人视频" / "做个介绍视频") | **Full Producer** | Phase 1a | Phase 1 → Phase 2 → Phase 3 → Phase 4 |
+| 已有文本 + 描述性偏好（如"女性数字人"、"温柔女声"） | **Enhanced Prompt** | Phase 1b | Phase 1b-1f → Phase 2 → Phase 3 → Phase 4 |
+| 已有文本，无其他偏好 | **Enhanced Prompt** | Phase 1b | Phase 1b-1f → Phase 2 → Phase 3 → Phase 4 |
+| 明确指定具体参数：文本 + 具体 avatar_id + 具体 speaker_id | **Quick Shot** | Phase 2 | Phase 2 → Phase 3 → Phase 4 |
 
 **默认：Full Producer**。宁可多问一个问题，也不要生成平庸的视频。
 
+**重要**：
+- **所有模式都必须执行 Phase 2（文本切分 + 动作分配）**，因为 action_id 需要根据文本语义在 Phase 2 中分配
+- Quick Shot 模式跳过 Phase 1（询问环节），因为用户已提供具体参数值
+- 描述性文字（如"女性"、"温柔"、"科技感背景"）不属于明确指定，应走 Enhanced Prompt 流程
+
 ### Step 3: 检查 AVATAR 文件
-若需使用Full Producer模式，则执行本步骤，否则跳过：
+若需使用 Full Producer 或 Enhanced Prompt 模式，则执行本步骤，否则跳过：
 
 扫描工作区根目录，查找所有 `AVATAR-*-*.md` 文件。
 - **找到文件** → 记录下来，在 Phase 1 中询问是否复用
 - **没找到** → 继续
+
+**Quick Shot 模式跳过此步骤，直接进入 Phase 2。**
 
 ---
 
@@ -112,6 +120,8 @@ metadata:
 **等待用户回答，收到文本后再继续。**
 
 #### Phase 1b: AVATAR 文件检查与复用
+
+**Enhanced Prompt 模式的入口点。**
 
 **只在找到 AVATAR-*-*.md 文件时执行。**
 
@@ -187,6 +197,8 @@ metadata:
 
 ### Phase 2: Scripting（脚本阶段）
 
+**所有模式都必须执行此阶段**，因为 action_id 需要根据文本语义分配。
+
 #### Phase 2a: 文本切分
 
 **规则：** 详见同级目录下的 [references/script-segmentation.md](references/script-segmentation.md)
@@ -201,9 +213,26 @@ metadata:
 - 根据用户反馈调整，直到用户满意。
 
 **Phase 2 阶段完成！进入 Phase 3。**
+
 ---
 
-###  Phase 3: Generate（生成阶段）
+## Quick Shot 工作流
+
+**触发条件**：用户提供了文本 + 具体的 avatar_id + 具体的 speaker_id（非描述性文字）
+
+**流程**：Phase 2 → Phase 3 → Phase 4
+
+Quick Shot 模式跳过 Phase 1（询问环节），因为用户已提供所有必要参数。但 **仍需执行 Phase 2** 进行文本切分和动作分配。
+
+**Quick Shot 模式下的 Phase 2 调整**：
+- 直接执行文本切分，无需询问用户偏好
+- 使用用户提供的 avatar_id 和 speaker_id
+- 背景和字幕使用默认值（绿幕背景，不烧录字幕）
+- 切分完成后可直接进入 Phase 3，无需用户确认
+
+---
+
+### Phase 3: Generate（生成阶段）
 
 #### 执行步骤
 
