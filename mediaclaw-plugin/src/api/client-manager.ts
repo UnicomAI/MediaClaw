@@ -25,6 +25,28 @@ import { SGLangClient } from "./sglang-client.js";
 export type MediaClient = YuanjingClient | SGLangClient;
 
 /**
+ * 脱敏敏感信息（apiKey、token 等）
+ */
+function maskSensitive(obj: unknown): unknown {
+  if (typeof obj !== "object" || obj === null) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(maskSensitive);
+  }
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.includes("apikey") || lowerKey.includes("api_key") || lowerKey.includes("token") || lowerKey.includes("secret") || lowerKey.includes("password")) {
+      result[key] = typeof value === "string" && value.length > 8 ? `${value.slice(0, 4)}****${value.slice(-4)}` : "****";
+    } else {
+      result[key] = maskSensitive(value);
+    }
+  }
+  return result;
+}
+
+/**
  * 创建媒体客户端
  */
 function createMediaClient(provider: ProviderName, config: YuanjingProviderConfig | SGLangProviderConfig): MediaClient {
@@ -101,8 +123,8 @@ function normalizeCapabilities(
  * 将配置标准化
  */
 export function normalizeConfig(raw: Partial<MediaClawConfig>): NormalizedConfig {
-  // 调试日志：打印原始配置
-  console.log('[MediaClaw] normalizeConfig raw:', JSON.stringify(raw, null, 2));
+  // 调试日志：打印配置（已脱敏）
+  console.log('[MediaClaw] normalizeConfig raw:', JSON.stringify(maskSensitive(raw), null, 2));
 
   // 校验 defaultProvider 是否有效
   if (raw.defaultProvider && !isValidProviderName(raw.defaultProvider)) {
@@ -113,7 +135,7 @@ export function normalizeConfig(raw: Partial<MediaClawConfig>): NormalizedConfig
 
   // 如果已经是新格式（有 providers 字段且包含有效配置），直接使用
   const rawProviders = raw.providers;
-  console.log('[MediaClaw] rawProviders:', JSON.stringify(rawProviders, null, 2));
+  console.log('[MediaClaw] rawProviders:', JSON.stringify(maskSensitive(rawProviders), null, 2));
   console.log('[MediaClaw] hasValidProviders:', hasValidProviders(rawProviders));
 
   if (hasValidProviders(rawProviders)) {
@@ -129,8 +151,8 @@ export function normalizeConfig(raw: Partial<MediaClawConfig>): NormalizedConfig
   }
 
   console.error('[MediaClaw] hasValidProviders check failed');
-  console.error('[MediaClaw] providers.yuanjing:', raw?.providers?.yuanjing);
-  console.error('[MediaClaw] providers.sglang:', raw?.providers?.sglang);
+  console.error('[MediaClaw] providers.yuanjing:', maskSensitive(raw?.providers?.yuanjing));
+  console.error('[MediaClaw] providers.sglang:', maskSensitive(raw?.providers?.sglang));
 
   throw new Error(
     `[MediaClaw] No valid provider configured. ` +
