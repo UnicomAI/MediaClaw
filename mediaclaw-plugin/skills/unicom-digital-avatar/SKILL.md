@@ -260,9 +260,9 @@ ffmpeg -f concat -safe 0 -i concat.txt -c copy {最终视频路径}
   6. 使用 `mediaclaw_replace_background` 工具（极清数字人背景合成工具，全色阶 PC Range 保留）：
     - `foreground_path`: 数字人视频（带绿幕）
     - `background_path`: 调整后的背景图
-    - `target_color`: `0x28AA78`（精确的青绿色，默认）
-    - `similarity`: `0.1`（相似度容差，默认）
-    - `smoothness`: `0.02`（边缘平滑度，默认）
+    - `target_color`: `0x00FF00`（绿幕颜色，默认）
+    - `similarity`: `0.3`（相似度容差，默认）
+    - `smoothness`: `0.04`（边缘平滑度，默认）
     - `loop_background`: `true`（如果背景是静态图片，务必设为 true）
     - `output_dir`: 输出目录
 
