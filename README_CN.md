@@ -217,6 +217,11 @@ https://github.com/user-attachments/assets/d6e26691-6391-4e40-8c7c-1209e90fe9b1
 
 
 
+### 产品海报生成
+基于产品介绍使用 MediaClaw 生成营销宣传海报，并按照固定评分表进行复评和持续优化。该 Skill 面向营销物料场景，支持保留历史最佳版本的多轮生成与迭代，而不是一次性出图。
+- 详细说明：`mediaclaw-plugin/skills/unicom-product-poster/SKILL.md`
+
+
 ### 数字人制作
 - 详细说明：`skills/unicom-digital-avatar/SKILL.md`
 

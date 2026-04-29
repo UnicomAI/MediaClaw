@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Poster"
+  short_description: "Create and refine product promo posters with MediaClaw."
+  default_prompt: "Use $unicom-product-poster to create a scored product promo poster."

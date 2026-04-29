@@ -218,6 +218,11 @@ https://github.com/user-attachments/assets/ddb13c0c-13db-4e8c-83dc-cc3b07aa062d
 
 
 
+### Product Poster Generation
+Generate product promotional posters with MediaClaw from a product brief, then review each result against a fixed marketing scorecard. The skill supports an iterative generate-review-improve loop for campaign visuals instead of a one-shot image workflow.
+- Detailed description: `mediaclaw-plugin/skills/unicom-product-poster/SKILL.md`
+
+
 ### Digital Avatar Production
 - Detailed description: `skills/unicom-digital-avatar/SKILL.md`
 
