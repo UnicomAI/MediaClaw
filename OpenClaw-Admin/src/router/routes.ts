@@ -75,7 +75,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'skills',
         name: 'Skills',
         component: () => import('@/views/skills/SkillsPage.vue'),
-        meta: { titleKey: 'routes.skills', icon: 'ExtensionPuzzleOutline', gateway: 'openclaw' },
+        meta: { titleKey: 'routes.skills', icon: 'RocketOutline', gateway: 'openclaw' },
       },
       {
         path: 'tools',
@@ -170,7 +170,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'hermes/skills',
         name: 'HermesSkills',
         component: () => import('@/views/hermes/HermesSkillsPage.vue'),
-        meta: { titleKey: 'routes.hermesSkills', icon: 'ExtensionPuzzleOutline', gateway: 'hermes' },
+        meta: { titleKey: 'routes.hermesSkills', icon: 'RocketOutline', gateway: 'hermes' },
       },
       {
         path: 'hermes/cron',

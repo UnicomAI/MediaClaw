@@ -139,14 +139,14 @@ export default {
       stats: {
         total: '技能总数',
         bundledAvailable: '系统内置（可用）',
-        user: '我创建的插件',
+        user: '我创建的技能',
       },
       searchPlaceholder: '搜索插件名称 / 描述 / 版本号',
       groups: {
         user: {
-          title: '我创建的插件',
+          title: '我创建的技能',
           description: '来自 workspace / 托管源 / 额外目录',
-          empty: '当前没有用户插件',
+          empty: '当前没有用户技能',
         },
         bundled: {
           title: '系统内置插件',
