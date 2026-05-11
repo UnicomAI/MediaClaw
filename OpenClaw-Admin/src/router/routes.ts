@@ -61,6 +61,12 @@ export const routes: RouteRecordRaw[] = [
         meta: { titleKey: 'routes.channels', icon: 'GitNetworkOutline', gateway: 'openclaw' },
       },
       {
+        path: 'plugins',
+        name: 'Plugins',
+        component: () => import('@/views/plugins/PluginsPage.vue'),
+        meta: { titleKey: 'routes.plugins', icon: 'ExtensionPuzzleOutline', gateway: 'openclaw' },
+      },
+      {
         path: 'config',
         redirect: { name: 'Models' },
         meta: { hidden: true },
