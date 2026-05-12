@@ -311,7 +311,15 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   function setSessionKey(key: string) {
-    sessionKey.value = key.trim()
+    const normalizedKey = key.trim()
+    const prevKey = sessionKey.value.trim()
+
+    // 如果会话 key 变化，清空消息列表以避免旧消息残留
+    if (normalizedKey !== prevKey) {
+      messages.value = []
+    }
+
+    sessionKey.value = normalizedKey
     const match = key.match(/^agent:([^:]+):/)
     if (match && match[1]) {
       const agentId = match[1]
@@ -625,11 +633,22 @@ export const useChatStore = defineStore('chat', () => {
     }
   ) {
     const keyInEvent = extractSessionKey(payload)
-    
+
     // 即使 sessionKey 为空，也处理事件，更新全局状态
     if (!sessionKey.value.trim() && keyInEvent) {
       // 当 sessionKey 为空但事件中有 sessionKey 时，更新 sessionKey
       sessionKey.value = keyInEvent
+    }
+
+    // 如果事件中的 sessionKey 与当前 sessionKey 不匹配，忽略该事件的消息
+    // 但仍然处理 agent status 更新（在 handleAgentStatusEvent 中处理）
+    const currentKey = sessionKey.value.trim()
+    if (keyInEvent && currentKey && keyInEvent !== currentKey) {
+      // 仍然触发历史刷新，但不合并消息
+      if (options?.refreshHistory ?? true) {
+        scheduleHistoryRefresh(200)
+      }
+      return
     }
 
     // 从 sessionKey 中提取 agentId
@@ -646,7 +665,7 @@ export const useChatStore = defineStore('chat', () => {
     if (options?.streaming) {
       pendingStreamMessages.push(...realtimeMessages)
       if (streamFlushRaf === null) {
-        // 对齐浏览器绘制帧合并流式增量，减少滚动“抖动/跳帧”观感
+        // 对齐浏览器绘制帧合并流式增量，减少滚动”抖动/跳帧”观感
         streamFlushRaf = requestAnimationFrame(() => {
           streamFlushRaf = null
           if (pendingStreamMessages.length === 0) return
@@ -947,16 +966,26 @@ export const useChatStore = defineStore('chat', () => {
       agentId = match[1]
     }
 
+    // 检测 /new 命令：会重置会话，需要清空消息列表
+    const isNewCommand = text === '/new' || text.startsWith('/new ')
+    if (isNewCommand) {
+      messages.value = []
+    }
+
     const idempotencyKey = `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
     resetAgentProgress(agentId)
     setAgentStatusPhase(agentId, 'sending', { runId: idempotencyKey, detail: null })
-    const localMessage: ChatMessage = {
-      id: idempotencyKey,
-      role: 'user',
-      content: text,
-      timestamp: new Date().toISOString(),
+
+    // /new 命令不在本地添加消息，因为会话会被重置
+    if (!isNewCommand) {
+      const localMessage: ChatMessage = {
+        id: idempotencyKey,
+        role: 'user',
+        content: text,
+        timestamp: new Date().toISOString(),
+      }
+      messages.value = [...messages.value, localMessage]
     }
-    messages.value = [...messages.value, localMessage]
 
     sending.value = true
     lastError.value = null
@@ -973,7 +1002,9 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (error) {
       lastError.value = error instanceof Error ? error.message : String(error)
-      messages.value = messages.value.filter((item) => item.id !== idempotencyKey)
+      if (!isNewCommand) {
+        messages.value = messages.value.filter((item) => item.id !== idempotencyKey)
+      }
       const agentStatus = getOrCreateAgentStatus(agentId)
       if (agentStatus.runId === idempotencyKey) {
         setAgentStatusPhase(agentId, 'error', { runId: null, detail: lastError.value })
