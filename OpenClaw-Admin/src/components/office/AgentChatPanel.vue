@@ -1012,6 +1012,14 @@ function closeImagePreview() {
   imagePreviewUrl.value = null
 }
 
+function handleMediaError(event: Event) {
+  const target = event.target as HTMLElement
+  if (target) {
+    target.style.display = 'none'
+  }
+  console.warn('[Media] Failed to load:', (event.target as HTMLImageElement | HTMLVideoElement)?.src)
+}
+
 function asString(value: unknown): string {
   if (typeof value === 'string') return value
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
@@ -1153,16 +1161,16 @@ function normalizeMediaPath(path: string): string {
 
 function extractImageFromText(text: string): ImageItemView[] {
   const images: ImageItemView[] = []
-  
-  const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
+
+  // 提取 Windows 绝对路径：盘符 + 冒号 + 路径分隔符
+  const windowsRegex = /[A-Za-z]:[\\/][^\s\n]*?\.(?:png|jpg|jpeg|gif|webp|bmp|svg|mp4|webm|avi|mov|mkv|ogg|wmv|flv|m4v)/gi
   let match
-  while ((match = mdImageRegex.exec(text)) !== null) {
-    const mediaPath = match[2]
-    if (mediaPath && MEDIA_EXTS.test(mediaPath)) {
-      const normalizedPath = normalizeMediaPath(mediaPath)
-      const url = `/api/media?path=${encodeURIComponent(normalizedPath)}`
-      const ext = mediaPath.split('.').pop()?.toLowerCase() || ''
-      const isVideo = VIDEO_EXTS.test(mediaPath)
+  while ((match = windowsRegex.exec(text)) !== null) {
+    const path = match[0].replace(/[。，,；;！!？?）)】\]'"`]+$/, '')
+    const url = `/api/media?path=${encodeURIComponent(path)}`
+    const ext = path.split('.').pop()?.toLowerCase() || ''
+    const isVideo = VIDEO_EXTS.test(path)
+    if (!images.some(img => img.url === url)) {
       images.push({
         mimeType: isVideo ? `video/${ext}` : `image/${ext}`,
         url,
@@ -1170,16 +1178,15 @@ function extractImageFromText(text: string): ImageItemView[] {
       })
     }
   }
-  
-  const mediaPathRegex = /MEDIA:\s*`?([^\s\n`]+\.(?:png|jpg|jpeg|gif|webp|bmp|svg|mp4|webm|avi|mov|mkv|ogg|wmv|flv|m4v))`?/gi
-  while ((match = mediaPathRegex.exec(text)) !== null) {
-    const rawPath = match[1]
-    if (rawPath) {
-      const mediaPath = rawPath.trim()
-      const normalizedPath = normalizeMediaPath(mediaPath)
-      const url = `/api/media?path=${encodeURIComponent(normalizedPath)}`
-      const ext = mediaPath.split('.').pop()?.toLowerCase() || ''
-      const isVideo = VIDEO_EXTS.test(mediaPath)
+
+  // 提取 Unix 绝对路径：以 / 开头，排除 http:// 或 https:// 后的路径
+  const unixRegex = /(?<![:/])\/[^\s\n]*?\.(?:png|jpg|jpeg|gif|webp|bmp|svg|mp4|webm|avi|mov|mkv|ogg|wmv|flv|m4v)/gi
+  while ((match = unixRegex.exec(text)) !== null) {
+    const path = match[0].replace(/[。，,；;！!？?）)】\]'"`]+$/, '')
+    const url = `/api/media?path=${encodeURIComponent(path)}`
+    const ext = path.split('.').pop()?.toLowerCase() || ''
+    const isVideo = VIDEO_EXTS.test(path)
+    if (!images.some(img => img.url === url)) {
       images.push({
         mimeType: isVideo ? `video/${ext}` : `image/${ext}`,
         url,
@@ -1187,7 +1194,7 @@ function extractImageFromText(text: string): ImageItemView[] {
       })
     }
   }
-  
+
   return images
 }
 
@@ -1202,21 +1209,6 @@ function parseRawContent(rawContent: ChatMessageContent[]): StructuredMessageVie
     if (part.type === 'text' && part.text) {
       const extractedImages = extractImageFromText(part.text)
       images.push(...extractedImages)
-
-      // 处理纯媒体路径（单行、非 MEDIA: 前缀），MEDIA: 前缀已在 extractImageFromText 中处理
-      const trimmedText = part.text.trim()
-      const isSingleLine = !trimmedText.includes('\n')
-      if (isSingleLine && !trimmedText.match(/^MEDIA:\s*`?/) && MEDIA_EXTS.test(trimmedText)) {
-        const mediaPath = trimmedText.includes('/') ? trimmedText : `browser/${trimmedText}`
-        const url = `/api/media?path=${encodeURIComponent(mediaPath)}`
-        const ext = trimmedText.split('.').pop()?.toLowerCase() || ''
-        const isVideo = VIDEO_EXTS.test(trimmedText)
-        images.push({
-          mimeType: isVideo ? `video/${ext}` : `image/${ext}`,
-          url,
-          mediaType: isVideo ? 'video' : 'image',
-        })
-      }
       plainTexts.push(part.text)
     }
     
@@ -1671,13 +1663,21 @@ function parseStructuredMessage(content: string): StructuredMessageView | null {
   }
 
   if (!recognized) return null
+
+  // 从 plainLines 中提取媒体路径
+  const images: ImageItemView[] = []
+  for (const line of parsed.plainLines) {
+    const extractedImages = extractImageFromText(line)
+    images.push(...extractedImages)
+  }
+
   return {
     toolCalls,
     thinkings,
     toolResults,
     validationErrors: [],
     plainTexts: parsed.plainLines,
-    images: [],
+    images,
   }
 }
 
@@ -2385,6 +2385,7 @@ watch(selectedSessionKey, async (newSessionKey) => {
                       class="chat-video"
                       controls
                       preload="metadata"
+                      @error="handleMediaError($event)"
                     />
                     <img
                       v-else-if="img.url"
@@ -2392,6 +2393,7 @@ watch(selectedSessionKey, async (newSessionKey) => {
                       class="chat-image"
                       loading="lazy"
                       @click="openImagePreview(img.url)"
+                      @error="handleMediaError($event)"
                     />
                     <span v-else class="chat-image-placeholder">{{ t('pages.chat.image.unavailable') }}</span>
                   </div>
@@ -2814,6 +2816,7 @@ watch(selectedSessionKey, async (newSessionKey) => {
                       class="chat-video"
                       controls
                       preload="metadata"
+                      @error="handleMediaError($event)"
                     />
                     <img
                       v-else-if="img.url"
@@ -2821,6 +2824,7 @@ watch(selectedSessionKey, async (newSessionKey) => {
                       class="chat-image"
                       loading="lazy"
                       @click="openImagePreview(img.url)"
+                      @error="handleMediaError($event)"
                     />
                     <span v-else class="chat-image-placeholder">{{ t('pages.chat.image.unavailable') }}</span>
                   </div>
