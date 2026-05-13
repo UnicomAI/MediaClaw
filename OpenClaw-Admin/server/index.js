@@ -861,8 +861,9 @@ app.get('/api/files/get', authMiddleware, async (req, res) => {
     
     const ext = extname(absPath).slice(1).toLowerCase()
     const imgExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp']
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'm4v']
     const pdfExts = ['pdf']
-    
+
     if (binary && imgExts.includes(ext)) {
       const contentTypeMap = {
         png: 'image/png',
@@ -874,14 +875,14 @@ app.get('/api/files/get', authMiddleware, async (req, res) => {
         ico: 'image/x-icon',
         bmp: 'image/bmp',
       }
-      
+
       const contentType = contentTypeMap[ext] || 'application/octet-stream'
       res.setHeader('Content-Type', contentType)
       res.setHeader('Content-Length', stats.size)
-      
+
       const stream = createReadStream(absPath)
       stream.pipe(res)
-      
+
       stream.on('error', (err) => {
         console.error('[Files] Stream error:', err.message)
         if (!res.headersSent) {
@@ -890,7 +891,37 @@ app.get('/api/files/get', authMiddleware, async (req, res) => {
       })
       return
     }
-    
+
+    if (binary && videoExts.includes(ext)) {
+      const contentTypeMap = {
+        mp4: 'video/mp4',
+        webm: 'video/webm',
+        ogg: 'video/ogg',
+        mov: 'video/quicktime',
+        avi: 'video/x-msvideo',
+        mkv: 'video/x-matroska',
+        flv: 'video/x-flv',
+        wmv: 'video/x-ms-wmv',
+        m4v: 'video/mp4',
+      }
+
+      const contentType = contentTypeMap[ext] || 'video/mp4'
+      res.setHeader('Content-Type', contentType)
+      res.setHeader('Content-Length', stats.size)
+      res.setHeader('Accept-Ranges', 'bytes')
+
+      const stream = createReadStream(absPath)
+      stream.pipe(res)
+
+      stream.on('error', (err) => {
+        console.error('[Files] Video stream error:', err.message)
+        if (!res.headersSent) {
+          res.status(500).json({ ok: false, error: { message: err.message } })
+        }
+      })
+      return
+    }
+
     if (binary && pdfExts.includes(ext)) {
       res.setHeader('Content-Type', 'application/pdf')
       res.setHeader('Content-Length', stats.size)

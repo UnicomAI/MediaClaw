@@ -73,6 +73,7 @@ const mediaUploading = ref(false)
 const uploadKey = ref(0)
 const selectedMediaFiles = ref<Array<{
   path: string
+  url: string   // API可访问的URL，用于预览
   name: string
   thumbnail?: string
   isVideo: boolean
@@ -152,6 +153,8 @@ async function copyToClipboard(text: string) {
 
 const imagePreviewUrl = ref<string | null>(null)
 const showImagePreviewModal = ref(false)
+const videoPreviewUrl = ref<string | null>(null)
+const showVideoPreviewModal = ref(false)
 
 function openImagePreview(url: string) {
   imagePreviewUrl.value = url
@@ -161,6 +164,28 @@ function openImagePreview(url: string) {
 function closeImagePreview() {
   showImagePreviewModal.value = false
   imagePreviewUrl.value = null
+}
+
+function openVideoPreview(url: string) {
+  videoPreviewUrl.value = url
+  showVideoPreviewModal.value = true
+}
+
+function closeVideoPreview() {
+  showVideoPreviewModal.value = false
+  videoPreviewUrl.value = null
+}
+
+function handleVideoClick(event: MouseEvent, url: string) {
+  const video = event.target as HTMLVideoElement
+  const rect = video.getBoundingClientRect()
+  const clickY = event.clientY - rect.top
+  const videoHeight = rect.height
+  // 控件区域通常在底部约 50px，如果点击在控件区域外则弹出预览
+  const controlsHeight = 50
+  if (clickY < videoHeight - controlsHeight) {
+    openVideoPreview(url)
+  }
 }
 
 function handleMediaError(event: Event) {
@@ -2735,18 +2760,22 @@ async function handleMediaUpload({ file }: { file: UploadFileInfo }) {
     const isVideo = isVideoFile(ext)
     const isImage = isImageFile(ext)
 
+    // 生成API可访问的URL
+    const apiUrl = `/api/files/get?path=${encodeURIComponent(relativePath)}&workspace=${encodeURIComponent(workspaceRoot)}&binary=true`
+
     // 生成缩略图
     let thumbnail: string | undefined = undefined
     if (isImage && file.file) {
-      // 图片：使用 API 获取
-      thumbnail = `/api/files/get?path=${encodeURIComponent(relativePath)}&workspace=${encodeURIComponent(workspaceRoot)}&binary=true`
+      // 图片：缩略图就是API URL
+      thumbnail = apiUrl
     } else if (isVideo && file.file) {
-      // 视频：前端提取第一帧
+      // 视频：前端提取第一帧作为缩略图
       thumbnail = await extractVideoThumbnail(file.file)
     }
 
     selectedMediaFiles.value.push({
       path: absolutePath,
+      url: apiUrl,
       name: originalName,
       thumbnail,
       isVideo
@@ -3148,6 +3177,7 @@ function clearMediaFiles() {
                                 class="chat-video"
                                 controls
                                 preload="metadata"
+                                @click="handleVideoClick($event, img.url)"
                                 @error="handleMediaError($event)"
                               />
                               <img
@@ -3216,7 +3246,11 @@ function clearMediaFiles() {
                       :key="file.path"
                       class="chat-media-thumbnail"
                     >
-                      <div class="chat-media-thumbnail-preview">
+                      <div
+                        class="chat-media-thumbnail-preview"
+                        :class="{ 'chat-media-thumbnail-preview-clickable': file.thumbnail || file.url }"
+                        @click="(file.thumbnail || file.url) && (file.isVideo ? openVideoPreview(file.url!) : openImagePreview(file.thumbnail || file.url))"
+                      >
                         <img
                           v-if="file.thumbnail"
                           :src="file.thumbnail"
@@ -3531,6 +3565,19 @@ function clearMediaFiles() {
     >
       <div v-if="imagePreviewUrl" class="image-preview-container">
         <img :src="imagePreviewUrl" class="image-preview-full" />
+      </div>
+    </NModal>
+
+    <NModal
+      v-model:show="showVideoPreviewModal"
+      preset="card"
+      :title="t('pages.chat.video.preview')"
+      style="width: 90vw; max-width: 1200px;"
+      :mask-closable="true"
+      @update:show="(val: boolean) => { if (!val) closeVideoPreview() }"
+    >
+      <div v-if="videoPreviewUrl" class="video-preview-container">
+        <video :src="videoPreviewUrl" class="video-preview-full" controls autoplay />
       </div>
     </NModal>
   </div>
@@ -4773,5 +4820,27 @@ body.wide-mode .chat-bubble {
   max-height: 80vh;
   object-fit: contain;
   border-radius: 8px;
+}
+
+.video-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.video-preview-full {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 8px;
+}
+
+.chat-media-thumbnail-preview-clickable {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.chat-media-thumbnail-preview-clickable:hover {
+  opacity: 0.8;
 }
 </style>

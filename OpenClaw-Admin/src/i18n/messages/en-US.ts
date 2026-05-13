@@ -1137,6 +1137,9 @@ export default {
         preview: 'Image Preview',
         unavailable: 'Image Unavailable',
       },
+      video: {
+        preview: 'Video Preview',
+      },
       sync: {
         syncing: 'Syncing...',
         syncedAt: 'Synced {time}',
