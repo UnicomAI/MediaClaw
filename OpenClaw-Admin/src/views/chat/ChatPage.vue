@@ -20,10 +20,11 @@ import {
   NTag,
   NText,
   NTooltip,
+  NUpload,
   useMessage,
 } from 'naive-ui'
-import type { SelectOption } from 'naive-ui'
-import { CopyOutline, RefreshOutline, SendOutline, StopCircleOutline, ChevronBackOutline, ChevronForwardOutline } from '@vicons/ionicons5'
+import type { SelectOption, UploadFileInfo } from 'naive-ui'
+import { CopyOutline, RefreshOutline, SendOutline, StopCircleOutline, ChevronBackOutline, ChevronForwardOutline, ImageOutline, VideocamOutline, CloseOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useChatStore } from '@/stores/chat'
@@ -66,6 +67,19 @@ let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 // 侧边栏折叠状态
 const sideCollapsed = ref(false)
+
+// 媒体上传相关
+const mediaUploading = ref(false)
+const uploadKey = ref(0)
+const selectedMediaFiles = ref<Array<{
+  path: string
+  name: string
+  thumbnail?: string
+  isVideo: boolean
+}>>([])
+
+// 视频文件扩展名
+const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'm4v']
 
 const roleFilterOptions = computed<SelectOption[]>(() => [
   { label: t('pages.chat.filters.roles.all'), value: 'all' },
@@ -2575,9 +2589,19 @@ async function handleRefreshChatData() {
 }
 
 async function handleSend() {
-  const content = draft.value.trim()
-  if (!content) return
+  const textContent = draft.value.trim()
+  const mediaFiles = selectedMediaFiles.value
+
+  // 如果没有文本内容也没有媒体文件，则不发送
+  if (!textContent && mediaFiles.length === 0) return
   if (agentBusy.value) return
+
+  // 构建发送内容：文本 + 媒体路径
+  let content = textContent
+  if (mediaFiles.length > 0) {
+    const mediaPathsText = mediaFiles.map(f => `\n${f.path}`).join('')
+    content = content ? `${content}${mediaPathsText}` : mediaPathsText.trim()
+  }
 
   try {
     const key = ensureSessionKey()
@@ -2585,6 +2609,8 @@ async function handleSend() {
     await chatStore.sendMessage(content)
     void fetchSessionTokenUsage(key)
     draft.value = ''
+    selectedMediaFiles.value = [] // 清空已选择的媒体文件
+    uploadKey.value++ // 强制重新渲染 NUpload 组件
     await nextTick()
     autoFollowBottom.value = true
     requestScrollToBottom({ force: true })
@@ -2592,6 +2618,158 @@ async function handleSend() {
     const reason = error instanceof Error ? error.message : String(error)
     message.error(reason)
   }
+}
+
+// 判断是否为视频文件
+function isVideoFile(extension?: string): boolean {
+  if (!extension) return false
+  return videoExts.includes(extension.toLowerCase())
+}
+
+// 判断是否为图片文件
+function isImageFile(extension?: string): boolean {
+  if (!extension) return false
+  const imgExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp']
+  return imgExts.includes(extension.toLowerCase())
+}
+
+// 从视频中提取第一帧作为缩略图
+function extractVideoThumbnail(videoFile: File): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.muted = true
+    video.playsInline = true
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    video.onloadedmetadata = () => {
+      // 跳到第一帧
+      video.currentTime = 0.1
+    }
+
+    video.onseeked = () => {
+      if (!ctx) {
+        resolve(undefined)
+        return
+      }
+      // 设置缩略图尺寸
+      const maxSize = 120
+      let width = video.videoWidth
+      let height = video.videoHeight
+
+      if (width > height) {
+        if (width > maxSize) {
+          height = (height / width) * maxSize
+          width = maxSize
+        }
+      } else {
+        if (height > maxSize) {
+          width = (width / height) * maxSize
+          height = maxSize
+        }
+      }
+
+      canvas.width = width
+      canvas.height = height
+      ctx.drawImage(video, 0, 0, width, height)
+
+      // 转换为 base64
+      const thumbnail = canvas.toDataURL('image/jpeg', 0.7)
+      URL.revokeObjectURL(video.src)
+      resolve(thumbnail)
+    }
+
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src)
+      resolve(undefined)
+    }
+
+    video.src = URL.createObjectURL(videoFile)
+  })
+}
+
+// 处理媒体文件上传
+async function handleMediaUpload({ file }: { file: UploadFileInfo }) {
+  if (!file.file) return false
+
+  // 检查是否已在选择列表中（按文件名去重）
+  const existingIndex = selectedMediaFiles.value.findIndex(f => f.name === file.name)
+  if (existingIndex >= 0) {
+    message.info(t('pages.chat.media.alreadySelected') || 'File already selected')
+    return false
+  }
+
+  mediaUploading.value = true
+  try {
+    const workspaceRoot = configStore.config?.agents?.defaults?.workspace || '~/.openclaw/workspace'
+    const ext = file.name.split('.').pop() || 'bin'
+
+    // 完全保留原始文件名
+    const originalName = file.name
+    const relativePath = `browser/${originalName}`
+
+    const formData = new FormData()
+    formData.append('file', file.file)
+    formData.append('path', relativePath)
+    formData.append('workspace', workspaceRoot)
+
+    const response = await fetch('/api/files/upload', {
+      method: 'POST',
+      body: formData,
+    })
+
+    const data = await response.json()
+    if (!data.ok) {
+      throw new Error(data.error?.message || 'Upload failed')
+    }
+
+    // 使用后端返回的绝对路径
+    const absolutePath = data.file?.absolutePath
+    if (!absolutePath) {
+      throw new Error('Failed to get absolute path')
+    }
+
+    // 判断文件类型
+    const isVideo = isVideoFile(ext)
+    const isImage = isImageFile(ext)
+
+    // 生成缩略图
+    let thumbnail: string | undefined = undefined
+    if (isImage && file.file) {
+      // 图片：使用 API 获取
+      thumbnail = `/api/files/get?path=${encodeURIComponent(relativePath)}&workspace=${encodeURIComponent(workspaceRoot)}&binary=true`
+    } else if (isVideo && file.file) {
+      // 视频：前端提取第一帧
+      thumbnail = await extractVideoThumbnail(file.file)
+    }
+
+    selectedMediaFiles.value.push({
+      path: absolutePath,
+      name: originalName,
+      thumbnail,
+      isVideo
+    })
+
+    message.success(t('pages.chat.media.uploadSuccess'))
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    message.error(t('pages.chat.media.uploadFailed') + ': ' + reason)
+  } finally {
+    mediaUploading.value = false
+  }
+
+  return false // 阻止默认上传行为
+}
+
+function removeMediaFile(index: number) {
+  selectedMediaFiles.value.splice(index, 1)
+}
+
+function clearMediaFiles() {
+  selectedMediaFiles.value = []
+  uploadKey.value++ // 强制重新渲染 NUpload 组件
 }
 </script>
 
@@ -3026,6 +3204,46 @@ async function handleSend() {
                   @keydown="handleDraftKeydown"
                 />
 
+                <!-- 已选择的媒体文件缩略图显示 -->
+                <div v-if="selectedMediaFiles.length > 0" class="chat-media-preview">
+                  <div class="chat-media-preview-header">
+                    <NText depth="3" style="font-size: 12px;">{{ t('pages.chat.media.selectTitle') }}</NText>
+                    <NButton size="tiny" text type="error" @click="clearMediaFiles">{{ t('common.clear') }}</NButton>
+                  </div>
+                  <div class="chat-media-thumbnails">
+                    <div
+                      v-for="(file, index) in selectedMediaFiles"
+                      :key="file.path"
+                      class="chat-media-thumbnail"
+                    >
+                      <div class="chat-media-thumbnail-preview">
+                        <img
+                          v-if="file.thumbnail"
+                          :src="file.thumbnail"
+                          class="chat-media-thumbnail-media"
+                          loading="lazy"
+                        />
+                        <div v-else class="chat-media-thumbnail-video-placeholder">
+                          <NIcon :component="file.isVideo ? VideocamOutline : ImageOutline" size="24" />
+                        </div>
+                        <div v-if="file.isVideo" class="chat-media-thumbnail-video-badge">
+                          <NIcon :component="VideocamOutline" size="14" />
+                        </div>
+                      </div>
+                      <div class="chat-media-thumbnail-name">{{ file.name }}</div>
+                      <NButton
+                        class="chat-media-thumbnail-remove"
+                        size="tiny"
+                        circle
+                        quaternary
+                        @click="removeMediaFile(index)"
+                      >
+                        <template #icon><NIcon :component="CloseOutline" /></template>
+                      </NButton>
+                    </div>
+                  </div>
+                </div>
+
                 <div v-if="slashMode" class="chat-slash-panel">
                   <div class="chat-slash-head">
                     <NText depth="3" style="font-size: 12px;">{{ t('pages.chat.slash.title') }}</NText>
@@ -3226,9 +3444,21 @@ async function handleSend() {
                     {{ t('pages.chat.input.sendHint', { key: normalizedSessionKey }) }}
                   </NText>
                   <NSpace :size="8">
-                    <NButton size="small" secondary :disabled="!draft" @click="draft = ''">
+                    <NButton size="small" secondary :disabled="!draft && selectedMediaFiles.length === 0" @click="draft = ''; clearMediaFiles()">
                       {{ t('pages.chat.actions.clearInput') }}
                     </NButton>
+                    <NUpload
+                      :key="uploadKey"
+                      :custom-request="handleMediaUpload"
+                      :show-file-list="false"
+                      accept="image/*,video/*"
+                      :disabled="mediaUploading"
+                    >
+                      <NButton size="small" secondary :loading="mediaUploading" :disabled="agentBusy">
+                        <template #icon><NIcon :component="ImageOutline" /></template>
+                        {{ t('pages.chat.actions.uploadMedia') }}
+                      </NButton>
+                    </NUpload>
                     <NButton
                       v-if="agentBusy"
                       size="small"
@@ -3724,6 +3954,93 @@ async function handleSend() {
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   box-shadow: var(--shadow-sm);
+}
+
+.chat-media-preview {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 8px 12px;
+}
+
+.chat-media-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.chat-media-thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-media-thumbnail {
+  position: relative;
+  width: 80px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.chat-media-thumbnail-preview {
+  width: 80px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  position: relative;
+}
+
+.chat-media-thumbnail-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-media-thumbnail-video-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.chat-media-thumbnail-video-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 2px;
+  color: white;
+}
+
+.chat-media-thumbnail-name {
+  font-size: 10px;
+  padding: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  background: var(--bg-secondary);
+}
+
+.chat-media-thumbnail-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.chat-media-thumbnail:hover .chat-media-thumbnail-remove {
+  opacity: 1;
 }
 
 .chat-slash-panel {

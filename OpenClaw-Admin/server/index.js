@@ -1150,15 +1150,16 @@ app.post('/api/files/upload', authMiddleware, upload.single('file'), async (req,
     if (!existsSync(parentDir)) {
       mkdirSync(parentDir, { recursive: true })
     }
-    
+
     await fsPromises.writeFile(absPath, file.buffer)
-    
+
     const stats = statSync(absPath)
     res.json({
       ok: true,
       file: {
         name: basename(absPath),
         path: relPath,
+        absolutePath: absPath.replace(/\\/g, '/'),
         size: stats.size,
         updatedAtMs: stats.mtimeMs,
       }
@@ -2822,9 +2823,7 @@ app.get('/api/media', (req, res) => {
     console.log('[Media] Request path:', path)
     
     // Prevent directory traversal
-    // const safePath = path.replace(/\.\./g, '').replace(/\//g, sep)
-    // huiq(20260421) 增加对 Windows 路径分隔符的处理，并去掉可能的 'browser\' 前缀
-    const safePath = path.replace(/\.\./g, '').replace(/\//g, sep).replace('browser\\', '').replace('browser\\', '')
+    const safePath = path.replace(/\.\./g, '').replace(/\//g, sep)
     console.log('[Media] Safe path:', safePath)
     
     // 支持多个可能的媒体目录，按优先级搜索

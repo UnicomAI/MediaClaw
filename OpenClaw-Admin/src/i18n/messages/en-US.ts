@@ -1081,6 +1081,17 @@ export default {
         send: 'Send',
         stop: 'Stop',
         clearInput: 'Clear input',
+        uploadMedia: 'Upload Media',
+        selectMedia: 'Select Media',
+      },
+      media: {
+        selectTitle: 'Select Media File',
+        selectHint: 'Click a file to add to message, click directory to browse',
+        uploadSuccess: 'Media file added',
+        uploadFailed: 'Upload failed',
+        noWorkspace: 'Unable to get workspace path',
+        pathCopied: 'Path added to input',
+        alreadySelected: 'File already selected',
       },
       tokens: {
         total: 'Total',

@@ -1084,6 +1084,17 @@ export default {
         send: '发送',
         stop: '停止',
         clearInput: '清空输入',
+        uploadMedia: '上传媒体',
+        selectMedia: '选择媒体',
+      },
+      media: {
+        selectTitle: '选择媒体文件',
+        selectHint: '点击文件添加到消息中，目录可进入浏览',
+        uploadSuccess: '媒体文件已添加',
+        uploadFailed: '上传失败',
+        noWorkspace: '无法获取工作区路径',
+        pathCopied: '路径已添加到输入框',
+        alreadySelected: '该文件已被选择',
       },
       tokens: {
         total: '总',
