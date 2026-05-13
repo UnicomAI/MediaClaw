@@ -170,7 +170,7 @@ function handleCustomUpdate() {
 <template>
   <NSpace :size="8" align="center">
     <a
-      href="https://github.com/joelulu/mediaclaw-plugin"
+      href="https://github.com/UnicomAI/MediaClaw.git"
       target="_blank"
       rel="noopener noreferrer"
       style="display: flex; align-items: center; color: inherit; text-decoration: none;"
