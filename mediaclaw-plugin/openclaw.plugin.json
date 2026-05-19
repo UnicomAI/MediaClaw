@@ -429,6 +429,37 @@
                 "additionalProperties": false
               }
             ]
+          },
+          "speechRecognition": {
+            "description": "语音识别能力配置（仅支持 yuanjing）",
+            "oneOf": [
+              { "type": "string", "enum": ["yuanjing"] },
+              {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": ["yuanjing"],
+                    "description": "使用的提供商类型，默认为 yuanjing"
+                  },
+                  "yuanjing": {
+                    "type": "object",
+                    "description": "覆盖全局 yuanjing 配置",
+                    "properties": {
+                      "apiKey": {
+                        "type": "string",
+                        "description": "联通元景 API Key"
+                      },
+                      "baseUrl": {
+                        "type": "string",
+                        "description": "yuanjing API Base URL"
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
           }
         },
         "additionalProperties": false

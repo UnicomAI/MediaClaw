@@ -72,7 +72,8 @@ metadata:
 ### Step 1: 工具检查
 
 分别检查mediaclaw插件和FFmpeg工具是否可用：
-- 若任意工具不可用，则提示用户缺少依赖，无法生成数字人视频，请用户修复后重新进行
+- 若mediaclaw插件不可用，则提示用户缺少依赖，无法生成数字人视频，请用户修复后重新进行
+- 若FFmpeg工具不可用，则按照同级目录下的 [references/install-ffmpeg.md](references/install-ffmpeg.md)中的安装步骤引导用户进行安装，并检查是否可用，安装完成后提示用户已经完成安装，并继续执行 Step 2
 - 若工具可用，则继续执行 Step 2
 
 ### Step 2:  模式检测

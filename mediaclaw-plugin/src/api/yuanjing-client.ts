@@ -4,6 +4,7 @@ import {
   VideoQueryResult,
   DigitalAvatarQueryResult,
   TextToSpeechData,
+  VoiceTranscriptionQueryResult,
   SUPPORTED_SIZES,
   KlingT2VParams,
   KlingI2VParams,
@@ -152,16 +153,16 @@ export class YuanjingClient {
 
   async imageQA(imageDataUrls: string[], prompt: string, mode: string): Promise<ApiResponse> {
     const systemPrompts: Record<string, string> = {
-      storyboard: `你是专业的AI视频分镜导演。你的任务是接收用户提供的参考图片和"初始视频创意"，将其拆解为3个连贯的、专为图生视频API调用的分镜提示词。
+      storyboard: `你是专业的AI视频分镜导演。你的任务是接收用户提供的参考图片和"初始视频创意"，将其拆解为3个连贯的、专为图生视频API调用的分镜提示词�?
       
       单镜头公式：[锁定常量] + [动态变量（运动 + 运镜）]
-      工作流程：
-      1. 提取与锁定常量：构建【主体】描述和【场景】
-      2. 设计动态变量：为三个分镜设计平滑递进的【运动】与【运镜】
+      工作流程�?
+      1. 提取与锁定常量：构建【主体】描述和【场景�?
+      2. 设计动态变量：为三个分镜设计平滑递进的【运动】与【运镜�?
       3. 输出格式：纯净 JSON，{"镜头1": "...", "镜头2": "...", "镜头3": "..."}`,
-            firstlast: `你是专业的AI视频分镜导演。你的任务是接收首帧参考图、尾帧参考图以及"初始视频创意"，将其拆解为3个连贯的分镜提示词。
+            firstlast: `你是专业的AI视频分镜导演。你的任务是接收首帧参考图、尾帧参考图以及"初始视频创意"，将其拆解为3个连贯的分镜提示词�?
 
-      核心原理：合理解释演变 - 深入分析首帧和尾帧之间的视觉差异，设计出合乎逻辑的，平滑的动作序列。
+      核心原理：合理解释演�?- 深入分析首帧和尾帧之间的视觉差异，设计出合乎逻辑的，平滑的动作序列�?
 
       格式要求：纯净中文 JSON，{"镜头1": "...", "镜头2": "...", "镜头3": "..."}`,
     };
@@ -521,6 +522,141 @@ export class YuanjingClient {
     });
   }
 
+  async voiceFileTranscription(
+    audioBuffer: Buffer,
+    audioFilename: string,
+    config: Record<string, unknown>
+  ): Promise<ApiResponse> {
+    const url = `${this.endpoint}/openapi/unicom/prod/file/asr`;
+
+    const form = new FormData();
+    const nestedConfig = { config };
+    form.append("config", JSON.stringify(nestedConfig));
+    form.append("file", new Blob([audioBuffer], { type: "application/octet-stream" }), audioFilename);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: form,
+      signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT),
+    });
+
+    if (!response.ok) {
+      await handleHttpError(response);
+    }
+
+        return response.json();
+  }
+
+  /**
+   * 查询语音转录结果
+   * @param sessionId 会话ID（提交任务时返回的uuid�?
+   */
+  async queryVoiceTranscriptionResult(sessionId: string): Promise<VoiceTranscriptionQueryResult> {
+    const url = `${this.endpoint}/openapi/unicom/download`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({ session_id: sessionId }),
+      signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT),
+    });
+
+    if (!response.ok) {
+      await handleHttpError(response);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * 检查语音转录是否完�?
+   */
+  isVoiceTranscriptionCompleted(result: VoiceTranscriptionQueryResult): boolean {
+    return result.is_effective === true || result.asr_result != null;
+  }
+
+  /**
+   * 检查语音转录是否处理中
+   */
+  isVoiceTranscriptionProcessing(result: VoiceTranscriptionQueryResult): boolean {
+    return result.is_effective === false && result.asr_result == null;
+  }
+
+  /**
+   * 从语音转录结果中提取转录文本
+   */
+  extractVoiceTranscriptionText(result: VoiceTranscriptionQueryResult): string {
+    // asr_result 可能�?JSON 字符串或已解析的对象
+    let asrResult = result.asr_result;
+    if (typeof asrResult === 'string') {
+      try {
+        asrResult = JSON.parse(asrResult);
+      } catch {
+        return asrResult; // 解析失败，直接返回原始字符串
+      }
+    }
+
+    if (!asrResult) {
+      return "";
+    }
+
+    // 元景 ASR 格式: [{ start, end, speaker, text, trans }]
+    if (Array.isArray(asrResult)) {
+      return asrResult
+        .map((segment: any) => {
+          const parts: string[] = [];
+          const start = typeof segment.start === 'number' ? segment.start.toFixed(2) : '';
+          const end = typeof segment.end === 'number' ? segment.end.toFixed(2) : '';
+          const speaker = segment.speaker != null ? segment.speaker : '';
+          const text = segment.text || '';
+          const trans = segment.trans || '';
+
+          // 格式: [start-end] Speaker N: text (trans)
+          const timeTag = start && end ? `[${start}-${end}]` : '';
+          const speakerTag = speaker !== '' ? `S${speaker}` : '';
+          const prefix = [timeTag, speakerTag].filter(Boolean).join(' ');
+          
+          let content = text;
+          if (trans && trans !== text) {
+            content = `${text} (${trans})`;
+          }
+          
+          return prefix ? `${prefix} ${content}` : content;
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    // 兼容旧格�? { diarization: [...] }
+    if (typeof asrResult === 'object' && Array.isArray(asrResult.diarization)) {
+      return asrResult.diarization
+        .map((segment: any) => {
+          const parts: string[] = [];
+          if (segment.speaker != null) {
+            parts.push(`Speaker ${segment.speaker}:`);
+          }
+          if (typeof segment.text === 'string' && segment.text.trim().length > 0) {
+            parts.push(segment.text.trim());
+          } else if (typeof segment.trans === 'string' && segment.trans.trim().length > 0) {
+            parts.push(segment.trans.trim());
+          }
+          return parts.join(' ');
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    if (typeof asrResult === 'string') {
+      return asrResult;
+    }
+
+    return JSON.stringify(asrResult, null, 2);
+  }
+
+
   async submitDigitalAvatar(
     audioBase64: string,
     avatarId: string,
@@ -711,7 +847,7 @@ export class YuanjingClient {
   }
 
   /**
-   * 检查 Kling 任务是否完成
+   * 检�?Kling 任务是否完成
    */
   isKlingTaskCompleted(result: KlingTaskResult): boolean {
     const status = result.data?.task_status?.toLowerCase();
@@ -719,7 +855,7 @@ export class YuanjingClient {
   }
 
   /**
-   * 检查 Kling 任务是否处理中
+   * 检�?Kling 任务是否处理�?
    */
   isKlingTaskProcessing(result: KlingTaskResult): boolean {
     const status = result.data?.task_status?.toLowerCase();
@@ -727,7 +863,7 @@ export class YuanjingClient {
   }
 
   /**
-   * 检查 Kling 任务是否失败
+   * 检�?Kling 任务是否失败
    */
   isKlingTaskFailed(result: KlingTaskResult): boolean {
     const status = result.data?.task_status?.toLowerCase();
@@ -735,14 +871,14 @@ export class YuanjingClient {
   }
 
   /**
-   * 从 Kling 任务结果中提取视频 URL
+   * �?Kling 任务结果中提取视�?URL
    */
   extractKlingVideoUrl(result: KlingTaskResult): string {
     return result.data?.task_result?.videos?.[0]?.url || "";
   }
 
   /**
-   * 从 Kling 任务结果中提取视频（下载并转换为 base64）
+   * �?Kling 任务结果中提取视频（下载并转换为 base64�?
    */
   async extractKlingVideoBase64(result: KlingTaskResult): Promise<string> {
     const url = this.extractKlingVideoUrl(result);

@@ -36,7 +36,7 @@ We have customized the HMI(Human-Machine Interface) and extended functions and o
 - ⚙️ **Flexible Configuration**: Support configuring different providers and model options by capability dimension
 - 🛠️ **Out-of-the-box**: Provides a complete WebUI interface, ready to use without complex development
 - 🔧 **Skill Extension**: Support custom Skill development to quickly adapt to vertical scenario requirements
-- 🎬 **Post-processing**: Built-in local video processing capabilities such as subtitle burning and green screen matting
+- 🎬 **Post-processing**: Built-in local video processing capabilities such as subtitle burning, green screen matting, video overlay, grading, and audio normalization
 
 ## 📊 Capability Matrix
 
@@ -48,8 +48,14 @@ We have customized the HMI(Human-Machine Interface) and extended functions and o
 | Image to Video | Required | ✅ (Wan Stylization/Kling Single Image) | ✅ | `mediaclaw_image_to_video` |
 | Multiple Images to Video | Required | ✅ (Wan Multi-image/Kling First-last Frame) | ❌ | `mediaclaw_images_to_video` |
 | Text to Speech | Required | ✅ | ❌ | `mediaclaw_text_to_speech` |
+| Speech Recognition | Required | ✅ | ❌ | `mediaclaw_speech_recognition` |
 | Digital Avatar Video | Required | ✅ | ❌ | `mediaclaw_digital_avatar` |
+| Subtitle Generation | No required (local processing) | N/A | N/A | `mediaclaw_build_srt` |
+| Subtitle Merge | No required (local processing) | N/A | N/A | `mediaclaw_merge_srt` |
 | Subtitle Burning | No required (local ffmpeg) | N/A | N/A | `mediaclaw_burn_subtitles` |
+| Audio Normalization | No required (local ffmpeg) | N/A | N/A | `mediaclaw_normalize_audio` |
+| Color Grading | No required (local ffmpeg) | N/A | N/A | `mediaclaw_apply_grade` |
+| Video Overlay | No required (local ffmpeg) | N/A | N/A | `mediaclaw_apply_overlay` |
 | Green Screen Background Replacement | No required (local ffmpeg) | N/A | N/A | `mediaclaw_replace_background` |
 | Local Image/Video Processing | No required (local processing) | N/A | N/A | `mediaclaw_local_image` |
 
@@ -230,7 +236,9 @@ Generate product promotional posters with MediaClaw from a product brief, then r
 https://github.com/user-attachments/assets/7ec85f5e-a6b4-4c5b-b9c6-d72123abb130
 
 
-
+### Video cut
+-Detailed description: `skills/unicom-video-cut/SKILL.md`
+- 
 
 ## 🙏 Acknowledgments
 

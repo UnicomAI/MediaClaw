@@ -34,7 +34,7 @@ MediaClaw是联通UnicomAI（联通元景大模型团队）基于 [OpenClaw](htt
 - ⚙️ **灵活配置**：支持按能力维度配置不同提供商和模型选项
 - 🛠️ **开箱即用**：提供完善的WebUI界面，无需复杂开发即可快速上手
 - 🔧 **技能扩展**：支持自定义Skill开发，快速适配垂直场景需求
-- 🎬 **后期处理**：内置字幕烧录、绿幕抠图等本地视频处理能力
+- 🎬 **后期处理**：内置字幕烧录、绿幕抠图、视频叠加、调色、音频标准化等本地后期能力
 
 ## 📊 能力矩阵
 
@@ -46,8 +46,14 @@ MediaClaw是联通UnicomAI（联通元景大模型团队）基于 [OpenClaw](htt
 | 单图生视频 | 需要 | ✅ (Wan风格化/Kling单图) | ✅ | `mediaclaw_image_to_video` |
 | 多图/首尾帧生视频 | 需要 | ✅ (Wan多图/Kling首尾帧) | ❌ | `mediaclaw_images_to_video` |
 | 文生语音 | 需要 | ✅ | ❌ | `mediaclaw_text_to_speech` |
+| 语音识别 | 需要 | ✅ | ❌ | `mediaclaw_speech_recognition` |
 | 数字人视频 | 需要 | ✅ | ❌ | `mediaclaw_digital_avatar` |
+| 字幕生成 | 不需要（本地处理） | N/A | N/A | `mediaclaw_build_srt` |
+| 字幕合并 | 不需要（本地处理） | N/A | N/A | `mediaclaw_merge_srt` |
 | 字幕烧录 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_burn_subtitles` |
+| 音频标准化 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_normalize_audio` |
+| 调色 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_apply_grade` |
+| 视频叠加 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_apply_overlay` |
 | 绿幕换背景 | 不需要（本地 ffmpeg） | N/A | N/A | `mediaclaw_replace_background` |
 | 本地图片/视频 | 不需要（本地处理） | N/A | N/A | `mediaclaw_local_image` |
 
@@ -229,6 +235,9 @@ https://github.com/user-attachments/assets/d6e26691-6391-4e40-8c7c-1209e90fe9b1
 https://github.com/user-attachments/assets/cfd28a76-4958-4225-ae0b-096d61745585
 
 
+### 视频剪辑
+- 详细说明：`skills/unicom-video-cut/SKILL.md`
+  
 
 ## 🙏 致谢
 

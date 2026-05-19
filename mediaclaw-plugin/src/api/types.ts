@@ -336,6 +336,19 @@ export interface VideoQueryResult {
   };
 }
 
+export interface VoiceTranscriptionQueryResult {
+  title?: string;
+  /** ASR识别结果，可能是JSON字符串或已解析的数组对象 */
+  asr_result?: string | Array<{start?: number; end?: number; speaker?: number; text?: string; trans?: string}> | {diarization?: Array<{speaker?: number; text?: string; trans?: string}>};
+  download_url?: string | null;
+  is_effective?: boolean;
+  id?: number;
+  session_id?: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface DigitalAvatarQueryResult {
   code: number;
   message?: string;
