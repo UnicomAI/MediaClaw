@@ -237,8 +237,8 @@ https://github.com/user-attachments/assets/7ec85f5e-a6b4-4c5b-b9c6-d72123abb130
 
 
 ### Video cut
--Detailed description: `skills/unicom-video-cut/SKILL.md`
-- 
+- Detailed description: `skills/unicom-video-cut/SKILL.md`
+
 
 ## 🙏 Acknowledgments
 
